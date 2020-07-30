@@ -7,17 +7,27 @@ import ru.live.toofast.payment.entity.Account;
 import ru.live.toofast.payment.model.MoneyTransferRequest;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.*;
 
 public class TransferTest {
 
-    Map<Long, Account> input = Map.of(1L, new Account(1L, 1_000_000L),
-            2L, new Account(2L, 1_000_000L));
+    //Map<Long, Account> input = Map.of(1L, new Account(1L, 1_000_000L),
+    //        2L, new Account(2L, 1_000_000L));
+
+    private Map<Long, Account> testData(){
+        Map<Long, Account> input=new HashMap<>();
+        input.put(1L, new Account(1L, 1_000_000L));
+        input.put(2L, new Account(2L, 1_000_000L));
+        return input;
+    }
 
     @Test
     public void simpleTest(){
+
+        Map<Long, Account> input = testData();
 
         PaymentTransferService service = new PaymentTransferService(input);
 
@@ -30,6 +40,8 @@ public class TransferTest {
     @Test
     public void simpleTestSingleAccount(){
 
+        Map<Long, Account> input = testData();
+
         PaymentTransferService service = new PaymentTransferService(input);
 
         service.transfer(new MoneyTransferRequest(1L, 1L, 10L));
@@ -41,10 +53,12 @@ public class TransferTest {
     @Test
     public void concurrentTest() throws InterruptedException, ExecutionException {
 
+        Map<Long, Account> input = testData();
+
         PaymentTransferService service = new PaymentTransferService(input);
 
         MoneyTransferRequest first = new MoneyTransferRequest(1L, 2L, 1L);
-        MoneyTransferRequest second = new MoneyTransferRequest(2L, 1L, 1L);
+        MoneyTransferRequest second = new MoneyTransferRequest(2L, 1L, 2L);
 
         List<MoneyTransferTask> taskList = new ArrayList<>();
 
@@ -62,8 +76,8 @@ public class TransferTest {
         }
 
 
-        Assert.assertEquals(Long.valueOf(1000000), input.get(1L).getBalance());
-        Assert.assertEquals(Long.valueOf(1000000), input.get(2L).getBalance());
+        Assert.assertEquals(Long.valueOf(1100000), input.get(1L).getBalance());
+        Assert.assertEquals(Long.valueOf(900000), input.get(2L).getBalance());
     }
 
 
